@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>chessboardjs Example #5000 - Only Allow Legal Moves</title>
+
+  <!-- 
+	When linking JS files from the internet, they may be renamed or 
+	may be removed, breaking your code when least expected.
+
+	If you want your code to work as intended, it's recommended to
+	package the required libraries together with your code. You may want to learn to use Maven for managing dependencies.
+
+	For this project, you may use the internet links.
+
+	<link rel="stylesheet" href="cs/chessboard-1.0.0.min.css"> 
+  -->
+  <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css" integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU" crossorigin="anonymous">
+
+
+
+<!-- 
+	If you have the code locally, you can load it using the following links.
+	However, you may need to enable your browser to load local files. 
+	In Safari, click on the Develop menu bar, and check Disable Local File Restrictions (https://ccm.net/apps-sites/web/1917-how-to-enable-local-file-access-on-safari/ )
+
+<script src="js/jquery-3.6.1.js"></script> 
+<script src="js/chessboard-1.0.0.min.js"></script>
+<script src="js/chess.js"></script>
+-->
+<link rel="stylesheet" href="cs/chessboard-1.0.0.min.css">
+<link href="Index.css" type="text/css" rel="stylesheet">
+<!-- Must load jquery before chessboard-1.0.0.min.js-->
+<script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+
+<!-- When linking JS files from the internet, they may be renamed or 
+	may be removed, breaking your code when least expected.
+
+	If you want your code to work as intended, it's recommended to
+	package the required libraries together with your code. You may want to learn to use Maven for managing dependencies.
+
+	For this project, you may use the internet links.
+-->
+<script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"
+        integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD"
+        crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js" 
+		integrity="sha384-s3XgLpvmHyscVpijnseAmye819Ee3yaGa8NxstkJVyA6nuDFjt59u1QvuEl/mecz" 
+		crossorigin="anonymous"></script>
+
+</head>
+<body>
+	<h1>Chess Game</h1>
+	<hr class="new5">
+	<br>
+	<input type="button1" onclick='styleButtonHandler("img/chesspieces/alpha/{piece}.png");' id= "Style1" value="style 1"></input>
+	<input type="button2" onclick='styleButtonHandler("img/chesspieces/wikipedia/{piece}.png");' id= "Style2" value="style 2"></input>
+	<input type="button3" onclick='styleButtonHandler("img/chesspieces/metro/{piece}.png");' id= "Style3" value="style 3"></input>
+	<input type="button4" onclick='styleButtonHandler("img/chesspieces/dilena/{piece}.png");' id= "Style4" value="style 4"></input>
+	<input type="flipBoard" onclick='board.flip();' id= "flip" value="Flip"></input>
+
+
+<!--- Begin Example HTML ------------------------------------------------------>
+<div id="chessBoard" style="width: 400px"></div>
+<button id="replayButton" style="display:none;">Replay Game</button>
+<button id="nextButton" style="display:none;">Next</button>
+<button id="resetButton" style="display:none;">Reset Game</button>
+<br><br>
+<label>Status:</label>
+<div id="status"></div>
+<label>FEN:</label>
+<div id="fen"></div>
+<label>PGN:</label>
+<div id="pgn"></div>
+<p id="Games Played"></p>
+<p id="ScoreP1"></p>
+<p id="ScoreP2"></p>
+<!--- End Example HTML -------------------------------------------------------->
+
+<!-- This JS code comes after the initialization of the main html 
+	in order for the jQuery variables $status, $fen, $pgn to work -->
+<script type="text/javascript">
+	/*$('Style 1').on('click', ChosenStyle = "img/chesspieces/alpha/{piece}.png")
+    $('Style 2').on('click', ChosenStyle = "img/chesspieces/wikipedia/{piece}.png")
+	$('Style 3').on('click', ChosenStyle = "img/chesspieces/metro/{piece}.png")*/
+
+	//var ChosenStyle = 'img/chesspieces/wikipedia/{piece}.png'
+
+
+	var P1 = window.prompt("What's Player 1's name? You will be playing Light pieces");
+	var P2 = window.prompt("What's Player 2's name? You will be playing Dark pieces");
+	console.log("Hello ",P1," and ", P2);
+
+	// --- Begin Example Chess Control JS --------------------------------------------------------
+	// NOTE: this example uses the chess.js library:
+	// https://github.com/jhlywa/chess.js
+	
+	// variable that holds our board visualization
+	var board = null;
+	// variable that holds our chess.js object for making legal moves
+	var game = new Chess();
+	// variable to hold the move history
+	const history = [];
+	var historyIndexPosition = 0;
+	//var pieceTheme = "img/chesspieces/wikipedia/{pieces].png"
+	var played = 0;
+	var p1wins = 0;
+	var p1loses = 0;
+	var p2wins = 0;
+	var p2loses = 0;
+
+	var startPosition = game.fen();
+
+	// jQuery variables for a few html fields
+	var $status = $("#status");
+	var $fen = $("#fen");
+	var $pgn = $("#pgn");
+	var $replayButton = $("#replayButton");
+	var $nextButton = $("#nextButton");
+	var $resetButton = $("#resetButton");
+
+	/*
+	function gameStyle1(){
+		if (!config.hasOwnProperty('pieceTheme') ||
+		(!isString(config.pieceTheme) && !isFunction(config.pieceTheme))) {
+			config.pieceTheme = 'img/chesspieces/wikipedia/{piece}.png'
+		}
+	}
+	function gameStyle2(){
+		config.pieceTheme = 'img/chesspieces/wiki2/{piece}.png'
+	}
+	init();
+	*/
+	let fen_modified = game.fen()
+
+        fen_modified = fen_modified.split(" ")
+
+        if (fen_modified[1] === 'b'){fen_modified[1] = 'w'}
+        else if (fen_modified[1] === 'w'){fen_modified[1] = 'b'}
+        fen_modified[3] = '-'; // resolves an error involving en-passant validation
+
+        fen_modified = fen_modified.join(" ");
+        game = Chess(fen_modified)
+
+
+	function onDragStart (source, piece, position, orientation) {
+	  // do not pick up pieces if the game is over
+	  if (game.game_over()) return false;
+	
+	  // only pick up pieces for the side to move
+	  if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+		  (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+		return false;
+	  }
+	}
+	
+
+
+	function onDrop (source, target) {
+	  // see if the move is legal
+	  var move = game.move({
+		from: source,
+		to: target,
+		promotion: 'q' // NOTE: always promote to a queen for example simplicity
+	  });
+	
+	  // illegal move
+	  if (move === null) return 'snapback';
+
+	  updateStatus();
+	}
+	
+	// update the board position after the piece snap
+	// for castling, en passant, pawn promotion
+	function onSnapEnd () {
+	  board.position(game.fen());
+	}
+	
+	function replayButtonHandler () {
+		historyIndexPosition = 0
+		board.position(history[historyIndexPosition]);
+
+		// enable manual step by step replay
+		$replayButton.hide();
+		$nextButton.show("fast");
+		
+		// enable automatic step by step replay
+		// for (let i = 0; i < history.length; i++) {
+		// 	setTimeout(function() {board.position(history[i])},1000);
+		// }
+	}
+
+	function resetButtonHandler () {
+		// reset the board position
+		board.position(startPosition);
+		// clear the history array
+		history.splice(0,history.length);
+		// hide buttons
+		hideButtons();
+	}
+
+	function nextButtonHandler () {
+		historyIndexPosition++;
+		board.position(history[historyIndexPosition]); 
+
+		if (historyIndexPosition >= history.length - 1) { 
+			$nextButton.hide();
+			$replayButton.show("fast");
+		}
+	}
+
+	function hideButtons () {
+		$replayButton.hide();
+		$nextButton.hide();
+		$resetButton.hide();
+	}
+
+	function showButtons () {
+		$replayButton.on('click', replayButtonHandler);
+		$nextButton.on('click', nextButtonHandler);
+		$resetButton.on('click', resetButtonHandler);
+
+		$replayButton.show("fast");
+		$resetButton.show("fast");
+	}
+
+	function updateStatus () {
+	  var status = '';
+	  var moveColor = P1;
+	
+	  if (game.turn() === 'b') {
+		moveColor = P2;
+	  }
+	
+	  // checkmate?
+	  if (game.in_checkmate()) {
+		status = 'Game over, ' + moveColor + ' is in checkmate.';
+		if (moveColor === P1) {
+			p1wins = p1wins + 1
+			p2loses = p2loses + 1
+		}
+		else if (moveColor === P2) {
+			p2wins = p1wins + 1
+			p1loses = p1loses + 1
+		}
+		showButtons();
+		played = played + 1
+		document.getElementById("Games Played").innerHTML = "Number of Games played: " + played;
+		document.getElementById("ScoreP1").innerHTML = P1 + " has won " + p1wins + " games and lost " + p1loses;
+		document.getElementById("ScoreP2").innerHTML = P2 + " has won " + p2wins + " games and lost " + p2loses;
+	  }
+	
+	  // draw?
+	  else if (game.in_draw()) {
+		status = 'Game over, drawn position';
+		showButtons();
+	  }
+	
+	  // game still on
+	  else {
+		status = moveColor + ' to move';
+	
+		// check?
+		if (game.in_check()) {
+		  status += ', ' + moveColor + ' is in check';
+		}
+	  }
+	
+	  // display the current status 
+	  $status.html(status);
+	  // display the game board as string
+	  $fen.html(game.fen());
+	  // story the FEN board into our history
+	  if (status != "") { 
+		history.push(game.fen());
+		console.log(history);
+	  }
+	  // display the game history
+	  $pgn.html(game.pgn());
+
+	}
+
+	function styleButtonHandler (styleLocation) {
+		ChosenStyle = styleLocation;
+		init();
+		console.log(ChosenStyle)
+	}
+	
+
+	//call button handler
+	$('#Style1').on('click', styleButtonHandler("img/chesspieces/alpha/{piece}.png"))
+    $('#Style2').on('click', styleButtonHandler("img/chesspieces/wikipedia/{piece}.png"))
+	$('#Style3').on('click', styleButtonHandler("img/chesspieces/metro/{piece}.png"))
+	$('#Style4').on('click', styleButtonHandler("img/chesspieces/dilena/{piece}.png"))
+
+	var ChosenStyle = 'img/chesspieces/wikipedia/{piece}.png'
+
+
+	
+	function init() {
+		var config = {
+	  pieceTheme: ChosenStyle,
+	  draggable: true,
+	  moveSpeed: 'slow',
+	  position: 'start',
+	  onDragStart: onDragStart,
+	  onDrop: onDrop,
+	  onSnapEnd: onSnapEnd,
+	  
+	};
+
+		board = new Chessboard("chessBoard", config);
+		updateStatus();
+		//board.flip();
+		
+	}; // end init()
+	$(document).ready(init);
+	
+	// --- End Example JS ----------------------------------------------------------
+	</script>
+</body></html>

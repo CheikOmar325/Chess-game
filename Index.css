@@ -1,0 +1,46 @@
+input[type=button1], input[type=button2], input[type=button3], input[type=button4], input[type=flipBoard] {
+    background-color: red;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    padding: 16px 32px;
+    text-decoration: none;
+    margin: 4px 2px;
+    cursor: pointer;
+  }
+
+  #chessBoard {
+    margin: auto;
+    width: 60%;
+    border: 3px solid red;
+    border-radius: 5px;
+    padding: 10px;
+  }
+  
+  label {
+    color: #B4886B;
+    font-weight: bold;
+    display: block;
+    width: 150px;
+    float: left;
+    }
+    label:after { content: ": " }
+
+    hr.new5 {
+      border: 5px solid rgb(82, 12, 12);
+      border-radius: 5px;
+    }
+
+
+    h1 {
+      color: #B4886B;
+      font-family: arial, sans-serif;
+      font-size: 100px;
+      font-weight: bold;
+      margin-top: 0px;
+      margin-bottom: 1px;
+      text-align: center;
+      }
+      body {
+        background-color: rgb(86, 86, 86);
+      }
